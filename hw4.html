@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" >
+    <title>Homework 4</title>
+    <script type="text/javascript">
+        var xmlDoc;
+        function loadXML(url) { 
+             if (url === "") {
+                 alert("Please input URL");
+                 return;
+             }
+              if (window.XMLHttpRequest)
+                  {// code for IE7+, Firefox, Chrome, Opera, Safari
+                       xmlhttp=new XMLHttpRequest();
+                   }
+                 else
+                  {// code for IE6, IE5
+                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+                  }
+
+              xmlhttp.open("GET",url,false);
+              xmlhttp.send();
+              if (xmlhttp.status === 404) {
+                  alert("XML does not exist");
+                  return;
+              }
+             var xmlDoc = xmlhttp.responseXML;
+             var scripts = xmlDoc.getElementsByTagName('parsererror')
+             if (scripts.length>0) {
+                  alert("Error in XML file");
+                  return;
+              }
+              return xmlDoc; 
+         };
+
+
+         function generateHTML(xmlDoc) {
+                var root = xmlDoc.documentElement;
+                var html = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>Newspaper List</title><body>";
+                var header = root.getElementsByTagName("Data");
+                var allrow = root.getElementsByTagName("Row");
+
+                if(allrow.length === 0) {
+                    alert("No newspaper information in XML");
+                    return;
+                }
+
+                html += "<table border=2>"; 
+                html += "<tr>";
+                for (var i = 0; i < header.length; i++) {
+                    if(header.item(i).nodeType==1){
+                    var headercontent = header.item(i).firstChild.nodeValue;
+                    html += "<th>";
+                    html += headercontent;
+                    html += "</th>";
+                    }
+                }
+                html += "</tr>";
+
+                for (var i = 0; i < allrow.length; i++) {
+                    html += "<tr>";
+                    var arow = allrow.item(i).children;
+
+                    for (var j = 0; j < arow.length; j++) {
+                        if(arow.item(j).nodeType==1){
+                        html += "<td>";
+                        if (arow.item(j).children.length === 0) {
+                            if (arow.item(j).nodeName === "Logo") {
+                                html += "<img src=\"" + arow.item(j).firstChild.nodeValue + "\" />";
+                            } else if(arow.item(j).nodeName =="HomePage"){
+                                var str = arow.item(j).firstChild.nodeValue;
+                                var result = str.link(str);
+                                html +=result;
+                                /*var str= arow.item(j).firstChild.nodeValue;
+                                if(str=="http://www.nytimes.com"){
+                                var result=str.link("http://www.nytimes.com");
+                                html +=result;
+                                }
+                                else if(str=="http://www.nydailynews.com"){
+                                var result=str.link("http://www.nydailynews.com");
+                                html +=result;
+                                }
+                                else if(str=="http://www.chicagotribune.com"){
+                                var result=str.link("http://www.chicagotribune.com");
+                                html +=result;
+                                }
+                                else if(str =="http://www.usatoday.com"){
+                                var result=str.link("http://www.usatoday.com");
+                                html +=result;
+                                }
+                                else if(str=="http://www.latimes.com"){
+                                var result=str.link("http://www.latimes.com");
+                                html +=result;
+                                }
+                                else if(str=="http://www.washingtontimes.com"){
+                                var result=str.link("http://www.washingtontimes.com");
+                                html +=result;
+                                }
+                                else if(str=="http://www.wsj.com"){
+                                var result=str.link("http://www.wsj.com");
+                                html +=result;
+                                }
+                                else{
+                                    var result=str.link("http://www.washingtonpost.com")
+                                    html +=result;
+                                }*/
+                                }
+                            else{
+                                html += arow.item(j).firstChild.nodeValue;
+                            }
+                        } else {
+                            html += "<ul>";
+                            for (var n = 0; n < arow.item(j).children.length; n++) {
+                                html += "<li>";
+                                html += arow.item(j).children.item(n).firstChild.nodeValue;
+                                html += "</li>";
+                            }
+                            html += "</ul>";
+                        }
+                        html += "</td>";
+                        }
+                    }
+                    html += "</tr>";
+                }
+                html += "</table>";
+                html +="<noscript>";
+                var newWindow = window.open("", "", "scrollbars=yes");
+                newWindow.document.write(html);
+         };
+    </script>
+
+    <style>
+        #input{
+            width:500px;
+            height:200px;
+            position:relative;
+            text-align: center;
+            top:200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #inputText {
+            margin-bottom: 10px;
+            
+        }
+        
+        h3{
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id ="input">
+        <h3>Enter URL for Newspaper List XML File</h3>
+        <form name ="myform" method="post" id="location">
+        <input type="text" name="URL" maxlength="255" size="30" id="inputText" value=newslist.xml><br>
+        <input type="button" name="submit" id="box" value="Submit Query" onclick="generateHTML(loadXML(document.getElementById('inputText').value))"><br>
+       </form>
+    </div>
+<noscript>
+</body>
+</html>
